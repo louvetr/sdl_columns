@@ -1,0 +1,31 @@
+#include "common.h"
+
+
+/////////////////////////////////////////////////////////////////
+// static functions definition
+/////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////
+// public functions definition
+/////////////////////////////////////////////////////////////////
+
+int main_state(struct game_context *ctx) {
+
+    if (!ctx) {
+        printf("invalid parameter\n");
+        return -EINVAL;
+    }
+
+    switch (ctx->state_cur)
+    {
+    case :
+        /* code */
+        break;
+    
+    default:
+        break;
+    }
+
+
+}
