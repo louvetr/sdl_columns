@@ -213,6 +213,7 @@ int gem_create_trio(struct gem **trio);
 
 int gem_move_trio(struct game_context *ctx);
 int gem_toggle_trio(struct gem **trio);
+int gem_check_combo(struct game_context *ctx);
 
 
 // TODO: sahll be static

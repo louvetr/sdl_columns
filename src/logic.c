@@ -34,7 +34,7 @@ static int logic_game(struct game_context *ctx)
 	if (ctx->gem_trio[2].status != GEM_STATE_GROUNDED)
 		return 0;
 
-	printf("[%s] TRIO GROUNDED !!!!!!!!!!!!!!!!!\n", __func__);
+	//printf("[%s] TRIO GROUNDED !!!!!!!!!!!!!!!!!\n", __func__);
 
 	// trio is grounded, let's process few things
 
@@ -51,48 +51,22 @@ static int logic_game(struct game_context *ctx)
 		printf("[%s] GAME OVER !!!!!!!!!!!!!!!!!\n", __func__);
 	}
 
-	// keep ref of trio in gem array
-	//if (idx_y == PG_NB_ROWS - 1) {
-		ctx->gem_array[idx_x][idx_y] = &ctx->gem_trio[2];
-		ctx->gem_array[idx_x][idx_y - 1] = &ctx->gem_trio[1];
-		ctx->gem_array[idx_x][idx_y - 2] = &ctx->gem_trio[0];
-		ctx->gem_array[idx_x][idx_y]->y = idx_y * GEM_HEIGHT + 10;
-		ctx->gem_array[idx_x][idx_y - 1]->y =
-			(idx_y - 1) * GEM_HEIGHT + 10;
-		ctx->gem_array[idx_x][idx_y - 2]->y =
-			(idx_y - 2) * GEM_HEIGHT + 10;
+	ctx->gem_array[idx_x][idx_y] = &ctx->gem_trio[2];
+	ctx->gem_array[idx_x][idx_y - 1] = &ctx->gem_trio[1];
+	ctx->gem_array[idx_x][idx_y - 2] = &ctx->gem_trio[0];
+	ctx->gem_array[idx_x][idx_y]->y = idx_y * GEM_HEIGHT + 10;
+	ctx->gem_array[idx_x][idx_y - 1]->y = (idx_y - 1) * GEM_HEIGHT + 10;
+	ctx->gem_array[idx_x][idx_y - 2]->y = (idx_y - 2) * GEM_HEIGHT + 10;
 
-		printf("[%s:%d] array[%d][%d] x = %d, y = %d\n", __func__,
-		       __LINE__, idx_x, idx_y - 2,
-		       ctx->gem_array[idx_x][idx_y - 2]->x,
-		       ctx->gem_array[idx_x][idx_y - 2]->y);
-		printf("[%s:%d] array[%d][%d] x = %d, y = %d\n", __func__,
-		       __LINE__, idx_x, idx_y - 1,
-		       ctx->gem_array[idx_x][idx_y - 1]->x,
-		       ctx->gem_array[idx_x][idx_y - 1]->y);
-		printf("[%s:%d] array[%d][%d] x = %d, y = %d\n", __func__,
-		       __LINE__, idx_x, idx_y, ctx->gem_array[idx_x][idx_y]->x,
-		       ctx->gem_array[idx_x][idx_y]->y);
-	/*} else {
-		ctx->gem_array[idx_x][idx_y - 1] = &ctx->gem_trio[2];
-		ctx->gem_array[idx_x][idx_y - 2] = &ctx->gem_trio[1];
-		ctx->gem_array[idx_x][idx_y - 3] = &ctx->gem_trio[0];
-		ctx->gem_array[idx_x][idx_y - 1]->y =
-			(idx_y - 1) * GEM_HEIGHT + 10;
-		ctx->gem_array[idx_x][idx_y - 2]->y =
-			(idx_y - 2) * GEM_HEIGHT + 10;
-		ctx->gem_array[idx_x][idx_y - 3]->y =
-			(idx_y - 3) * GEM_HEIGHT + 10;
-		printf("[%s:%d] array[%d][%d] x = %d, y = %d\n", __func__, __LINE__, idx_x,
-		       idx_y - 3, ctx->gem_array[idx_x][idx_y - 3]->x,
-		       ctx->gem_array[idx_x][idx_y - 3]->y);
-		printf("[%s:%d] array[%d][%d] x = %d, y = %d\n", __func__, __LINE__, idx_x,
-		       idx_y - 2, ctx->gem_array[idx_x][idx_y - 2]->x,
-		       ctx->gem_array[idx_x][idx_y - 2]->y);
-		printf("[%s;%d] array[%d][%d] x = %d, y = %d\n", __func__, __LINE__, idx_x,
-		       idx_y - 1, ctx->gem_array[idx_x][idx_y - 1]->x,
-		       ctx->gem_array[idx_x][idx_y - 1]->y);
-	}*/
+	/*printf("[%s:%d] array[%d][%d] x = %d, y = %d\n", __func__, __LINE__,
+	       idx_x, idx_y - 2, ctx->gem_array[idx_x][idx_y - 2]->x,
+	       ctx->gem_array[idx_x][idx_y - 2]->y);
+	printf("[%s:%d] array[%d][%d] x = %d, y = %d\n", __func__, __LINE__,
+	       idx_x, idx_y - 1, ctx->gem_array[idx_x][idx_y - 1]->x,
+	       ctx->gem_array[idx_x][idx_y - 1]->y);
+	printf("[%s:%d] array[%d][%d] x = %d, y = %d\n", __func__, __LINE__,
+	       idx_x, idx_y, ctx->gem_array[idx_x][idx_y]->x,
+	       ctx->gem_array[idx_x][idx_y]->y);*/
 
 	// next trio becomes trio
 	ctx->gem_trio = ctx->gem_trio_next;
@@ -105,6 +79,7 @@ static int logic_game(struct game_context *ctx)
 	}
 
 	// check combo
+	gem_check_combo(ctx);
 
 	// update score and other values
 
