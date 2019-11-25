@@ -1,3 +1,5 @@
+#.PHONY: using-gcc using-gcc-static using-clang
+
 #OBJS specifies which files to compile as part of the project
 OBJS = ./src/main.c ./src/event.c ./src/display.c ./src/logic.c ./src/gems.c
 
@@ -13,6 +15,7 @@ COMPILER_FLAGS = -Wall -ggdb -gdwarf-2
 
 #LINKER_FLAGS specifies the libraries we're linking against
 LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
+#LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lasan
 
 #OBJ_NAME specifies the name of our exectuable
 OBJ_NAME = sdl_columns

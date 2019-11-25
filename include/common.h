@@ -14,8 +14,11 @@
 // defines
 /////////////////////////////////////////////////////////////////
 
-#define SCREEN_FPS 60
+#define SCREEN_FPS 30
 #define MS_PER_SEC 1000
+#define GEMS_PER_LEVEL 20
+#define MAX_SPEED 10
+
 
 #define PATH_BG_TITLE "./media/columns_bg_title_600_800.png"
 #define PATH_BG_GAME "./media/columns_bg_game_600_800.png"
@@ -176,9 +179,9 @@ struct game_context {
     // representation of gems on screen
     struct gem *gem_array[PG_NB_COLUMNS][PG_NB_ROWS];
     // gem trio falling
-    struct gem *gem_trio;
+    struct gem *gem_trio[3];
     // next gem trio falling
-    struct gem *gem_trio_next;
+    struct gem *gem_trio_next[3];
 
     // font to display text
     TTF_Font *font;
@@ -207,13 +210,16 @@ int load_texture_from_file(struct game_context *ctx, char *path,
 int main_logic(struct game_context *ctx);
 
 
-int gem_create_trio(struct gem **trio);
+//int gem_create_trio(struct gem **trio);
+int gem_create_trio(struct gem *trio[3]);
 /*int gem_check_collision(struct gem *g,
 			struct gem *array[PG_NB_COLUMNS][PG_NB_ROWS]);*/
 
 int gem_move_trio(struct game_context *ctx);
-int gem_toggle_trio(struct gem **trio);
+//int gem_toggle_trio(struct gem **trio);
+int gem_toggle_trio(struct gem *trio[3]);
 int gem_check_combo(struct game_context *ctx);
+int gem_apply_gravity(struct gem *array[PG_NB_COLUMNS][PG_NB_ROWS]);
 
 
 // TODO: sahll be static

@@ -69,6 +69,7 @@ static int main_init(struct game_context *ctx)
 
 	// set state to title screen
 	ctx->status_cur = GAME_STATE_TITLE;
+		printf("[%s] game state goes to %d\n", __func__, ctx->status_cur);
 	ctx->status_prev = GAME_STATE_TITLE;
 
 	for (int i = 0; i < GEM_TYPE_LAST; i++) {

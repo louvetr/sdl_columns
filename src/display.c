@@ -20,6 +20,8 @@
 #define GAME_NBGEM_VALUE_X 187
 #define GAME_NBGEM_VALUE_Y 681
 
+enum display_gem_set { DISPLAY_ALL_GEMS = 0, DISPLAY_HIDE_CLEARED_GEMS };
+
 /////////////////////////////////////////////////////////////////
 // static functions definition
 /////////////////////////////////////////////////////////////////
@@ -241,7 +243,8 @@ static int game_text_render(struct game_context *ctx)
 	return 0;
 }
 
-static int display_screen_game(struct game_context *ctx)
+static int display_screen_game(struct game_context *ctx,
+			       enum display_gem_set gem_set)
 {
 	int ret;
 
@@ -271,14 +274,19 @@ static int display_screen_game(struct game_context *ctx)
 		for (int j = 0; j < PG_NB_ROWS; j++) {
 			if (!ctx->gem_array[i][j])
 				continue;
+
+			if (gem_set == DISPLAY_HIDE_CLEARED_GEMS &&
+			    ctx->gem_array[i][j]->status == GEM_STATE_CLEARING)
+				continue;
+
 			ret = texture_render(
 				ctx, &ctx->gfx.t_gems_sheet,
 				ctx->gem_array[i][j]->x,
 				ctx->gem_array[i][j]->y,
 				&ctx->gfx.gems_clip[ctx->gem_array[i][j]->type]);
-		if (ret < 0)
-			printf("[%s] display gem array: texture_render FAILED\n",
-			       __func__);
+			if (ret < 0)
+				printf("[%s] display gem array: texture_render FAILED\n",
+				       __func__);
 		}
 	}
 
@@ -287,7 +295,7 @@ static int display_screen_game(struct game_context *ctx)
 		ret = texture_render(
 			ctx, &ctx->gfx.t_gems_sheet, GAME_NEXT_TOPGEM_X,
 			GAME_NEXT_TOPGEM_Y + i * GEM_HEIGHT,
-			&ctx->gfx.gems_clip[ctx->gem_trio_next[i].type]);
+			&ctx->gfx.gems_clip[ctx->gem_trio_next[i]->type]);
 		if (ret < 0)
 			printf("[%s] display next trio: texture_render FAILED\n",
 			       __func__);
@@ -299,9 +307,9 @@ static int display_screen_game(struct game_context *ctx)
 		       ctx->gem_trio[i].x, ctx->gem_trio[i].y);*/
 
 		ret = texture_render(
-			ctx, &ctx->gfx.t_gems_sheet, ctx->gem_trio[i].x,
-			ctx->gem_trio[i].y,
-			&ctx->gfx.gems_clip[ctx->gem_trio[i].type]);
+			ctx, &ctx->gfx.t_gems_sheet, ctx->gem_trio[i]->x,
+			ctx->gem_trio[i]->y,
+			&ctx->gfx.gems_clip[ctx->gem_trio[i]->type]);
 		if (ret < 0)
 			printf("[%s] display trio: texture_render FAILED\n",
 			       __func__);
@@ -320,6 +328,17 @@ static int display_screen_pause(struct game_context *ctx)
 
 static int display_screen_gameover(struct game_context *ctx)
 {
+	return 0;
+}
+
+static int display_screen_gem_clearing(struct game_context *ctx)
+{
+	for (int i = 0; i < 3; i++) {
+		display_screen_game(ctx, DISPLAY_HIDE_CLEARED_GEMS);
+		SDL_Delay(100);
+		display_screen_game(ctx, DISPLAY_ALL_GEMS);
+		SDL_Delay(100);
+	}
 	return 0;
 }
 
@@ -370,6 +389,7 @@ int main_display(struct game_context *ctx)
 		printf("invalid parameter\n");
 		return -EINVAL;
 	}
+	//printf("[%s] ENTER with cur = %d, prev = %d\n", __func__, ctx->status_cur, ctx->status_prev);
 
 	switch (ctx->status_cur) {
 	case GAME_STATE_TITLE:
@@ -379,7 +399,7 @@ int main_display(struct game_context *ctx)
 		display_screen_quit(ctx);
 		break;
 	case GAME_STATE_GAME:
-		display_screen_game(ctx);
+		display_screen_game(ctx, DISPLAY_ALL_GEMS);
 		break;
 	case GAME_STATE_PAUSE:
 		display_screen_pause(ctx);
@@ -388,7 +408,7 @@ int main_display(struct game_context *ctx)
 		display_screen_gameover(ctx);
 		break;
 	case GAME_STATE_CLEAR_GEMS:
-		// do nothing
+		display_screen_gem_clearing(ctx);
 		break;
 	default:
 		printf("[%s] invalid state", __func__);

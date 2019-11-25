@@ -42,27 +42,27 @@ static int event_enter_game(struct game_context *ctx)
 	}
 
 	ctx->score = 0;
-	ctx->score_multiplier = 0;
+	ctx->score_multiplier = 1;
 	ctx->level = 1;
 	ctx->nb_gems_cleared = 0;
 
-	ret = gem_create_trio(&ctx->gem_trio_next);
+	ret = gem_create_trio(ctx->gem_trio_next);
 	if (ret < 0) {
 		printf("[%s] gem_create_trio FAILED\n", __func__);
 		return -EINVAL;
 	}
 
-	ret = gem_create_trio(&(ctx->gem_trio));
+	ret = gem_create_trio(ctx->gem_trio);
 	if (ret < 0) {
 		printf("[%s] gem_create_trio FAILED\n", __func__);
 		return -EINVAL;
 	}
 
-	for (int i = 0; i < 3; i++) {
+	/*for (int i = 0; i < 3; i++) {
 		printf("[%s] trio[%d] %p: (%d, %d), type = %d\n", __func__, i,
 		       &ctx->gem_trio[i], ctx->gem_trio[i].x,
 		       ctx->gem_trio[i].y, ctx->gem_trio[i].type);
-	}
+	}*/
 
 	for (int i = 0; i < PG_NB_COLUMNS; i++) {
 		for (int j = 0; j < PG_NB_ROWS; j++) {
@@ -102,6 +102,8 @@ static int event_title(struct game_context *ctx)
 		// enter game
 		ctx->status_prev = ctx->status_cur;
 		ctx->status_cur = GAME_STATE_GAME;
+		printf("[%s] game state goes to %d\n", __func__,
+		       ctx->status_cur);
 
 		ret = event_enter_game(ctx);
 		if (ret < 0)
@@ -152,11 +154,15 @@ static int event_quit(struct game_context *ctx)
 
 static int event_game(struct game_context *ctx)
 {
+	/*printf("[%s] ENTER with cur = %d, prev = %d\n", __func__,
+	       ctx->status_cur, ctx->status_prev);*/
 	switch (ctx->action) {
 	case ACTION_ESCAPE:
 		// go back to title
 		ctx->status_prev = ctx->status_cur;
 		ctx->status_cur = GAME_STATE_TITLE;
+		printf("[%s] game state goes to %d\n", __func__,
+		       ctx->status_cur);
 
 		// stop music
 		Mix_HaltMusic();
@@ -165,8 +171,17 @@ static int event_game(struct game_context *ctx)
 		break;
 	case ACTION_PAUSE:
 
+		if (ctx->status_prev == GAME_STATE_GAME) {
 		ctx->status_prev = ctx->status_cur;
 		ctx->status_cur = GAME_STATE_PAUSE;
+		//SDL_Delay(200);
+		//ctx->status_prev = GAME_STATE_PAUSE;
+		printf("[%s] game state goes to %d\n", __func__,
+		       ctx->status_cur);	
+		} else {
+			ctx->status_prev = GAME_STATE_GAME;
+		}
+
 
 		// pause music
 		if (Mix_PlayingMusic()) {
@@ -176,7 +191,7 @@ static int event_game(struct game_context *ctx)
 		break;
 	case ACTION_UP:
 
-		gem_toggle_trio(&ctx->gem_trio);
+		gem_toggle_trio(ctx->gem_trio);
 
 		break;
 	case ACTION_DOWN:
@@ -198,6 +213,8 @@ static int event_game(struct game_context *ctx)
 
 static int event_pause(struct game_context *ctx)
 {
+	/*printf("[%s] ENTER with cur = %d, prev = %d\n", __func__,
+	       ctx->status_cur, ctx->status_prev);*/
 	switch (ctx->action) {
 	case ACTION_ENTER:
 		break;
@@ -206,8 +223,15 @@ static int event_pause(struct game_context *ctx)
 	case ACTION_PAUSE:
 
 		// go back to title
-		ctx->status_prev = ctx->status_cur;
-		ctx->status_cur = GAME_STATE_GAME;
+		if (ctx->status_prev == GAME_STATE_PAUSE) {
+			ctx->status_prev = ctx->status_cur;
+			ctx->status_cur = GAME_STATE_GAME;
+			printf("[%s] game state goes to %d\n", __func__,
+			       ctx->status_cur);
+		} else {
+			ctx->status_prev = GAME_STATE_PAUSE;
+
+		}
 
 		// resume music
 		if (Mix_PausedMusic()) {
@@ -266,6 +290,9 @@ int main_event(struct game_context *ctx)
 		return -EINVAL;
 	}
 
+	/*printf("[%s] ENTER with cur = %d, prev = %d\n", __func__,
+	       ctx->status_cur, ctx->status_prev);*/
+
 	while (SDL_PollEvent(&ctx->event) != 0) {
 		//user ask to quit
 		if (ctx->event.type == SDL_QUIT)
@@ -281,6 +308,7 @@ int main_event(struct game_context *ctx)
 				break;
 			case SDLK_SPACE:
 				ctx->action = ACTION_PAUSE;
+				printf("[%s] detected action ACTION_PAUSE\n");
 				break;
 			case SDLK_UP:
 			case SDLK_z:
