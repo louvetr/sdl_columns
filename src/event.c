@@ -45,6 +45,7 @@ static int event_enter_game(struct game_context *ctx)
 	ctx->score_multiplier = 1;
 	ctx->level = 1;
 	ctx->nb_gems_cleared = 0;
+	ctx->fall_fast = 0;
 
 	ret = gem_create_trio(ctx->gem_trio_next);
 	if (ret < 0) {
@@ -100,23 +101,40 @@ static int event_title(struct game_context *ctx)
 		break;
 	case ACTION_ENTER:
 		// enter game
-		ctx->status_prev = ctx->status_cur;
-		ctx->status_cur = GAME_STATE_GAME;
-		printf("[%s] game state goes to %d\n", __func__,
-		       ctx->status_cur);
 
-		ret = event_enter_game(ctx);
-		if (ret < 0)
-			printf("[%s] event_enter_game FAILED", __func__);
-		else
-			printf("[%s] event_enter_game SUCCESS", __func__);
+		switch (ctx->title_cursor) {
+		case TITLE_EXIT:
+			ctx->exit = 1;
+			break;
+		case TITLE_START:
+			ctx->status_prev = ctx->status_cur;
+			ctx->status_cur = GAME_STATE_GAME;
+			printf("[%s] game state goes to %d\n", __func__,
+			       ctx->status_cur);
 
+			ret = event_enter_game(ctx);
+			if (ret < 0)
+				printf("[%s] event_enter_game FAILED",
+				       __func__);
+			else
+				printf("[%s] event_enter_game SUCCESS",
+				       __func__);
+			break;
+		case TITLE_OPTIONS:
+		case TITLE_CREDITS:
+		default:
+			break;
+		}
 		break;
 	case ACTION_PAUSE:
 		break;
 	case ACTION_UP:
+		if (ctx->title_cursor != TITLE_START)
+			ctx->title_cursor--;
 		break;
 	case ACTION_DOWN:
+		if (ctx->title_cursor != TITLE_EXIT)
+			ctx->title_cursor++;
 		break;
 	case ACTION_LEFT:
 		break;
@@ -172,16 +190,15 @@ static int event_game(struct game_context *ctx)
 	case ACTION_PAUSE:
 
 		if (ctx->status_prev == GAME_STATE_GAME) {
-		ctx->status_prev = ctx->status_cur;
-		ctx->status_cur = GAME_STATE_PAUSE;
-		//SDL_Delay(200);
-		//ctx->status_prev = GAME_STATE_PAUSE;
-		printf("[%s] game state goes to %d\n", __func__,
-		       ctx->status_cur);	
+			ctx->status_prev = ctx->status_cur;
+			ctx->status_cur = GAME_STATE_PAUSE;
+			//SDL_Delay(200);
+			//ctx->status_prev = GAME_STATE_PAUSE;
+			printf("[%s] game state goes to %d\n", __func__,
+			       ctx->status_cur);
 		} else {
 			ctx->status_prev = GAME_STATE_GAME;
 		}
-
 
 		// pause music
 		if (Mix_PlayingMusic()) {
@@ -230,7 +247,6 @@ static int event_pause(struct game_context *ctx)
 			       ctx->status_cur);
 		} else {
 			ctx->status_prev = GAME_STATE_PAUSE;
-
 		}
 
 		// resume music
@@ -259,6 +275,14 @@ static int event_gameover(struct game_context *ctx)
 {
 	switch (ctx->action) {
 	case ACTION_ESCAPE:
+		// go back to title
+		ctx->status_prev = ctx->status_cur;
+		ctx->status_cur = GAME_STATE_TITLE;
+		printf("[%s] game state goes to %d\n", __func__,
+		       ctx->status_cur);
+
+		// stop music
+		Mix_HaltMusic();
 		break;
 	case ACTION_ENTER:
 		break;

@@ -2,8 +2,8 @@
 
 #define GAME_NEXT_LABEL_X 83
 #define GAME_NEXT_LABEL_Y 59
-#define GAME_NEXT_TOPGEM_X 83
-#define GAME_NEXT_TOPGEM_Y 80
+#define GAME_NEXT_TOPGEM_X 90
+#define GAME_NEXT_TOPGEM_Y 88
 
 #define GAME_SCORE_LABEL_X 32
 #define GAME_SCORE_LABEL_Y 314
@@ -25,6 +25,37 @@ enum display_gem_set { DISPLAY_ALL_GEMS = 0, DISPLAY_HIDE_CLEARED_GEMS };
 /////////////////////////////////////////////////////////////////
 // static functions definition
 /////////////////////////////////////////////////////////////////
+
+static int load_gameover_message(struct game_context *ctx, TTF_Font *font,
+				 struct texture *t, char *string,
+				 SDL_Color text_color)
+{
+	SDL_DestroyTexture(t->texture);
+
+	SDL_Surface *text_surface =
+		TTF_RenderText_Solid(font, string, text_color);
+
+	if (!text_surface) {
+		printf("[%s] Unable to render text surface! SDL_ttf Error: %s\n",
+		       __func__, TTF_GetError());
+		return -EINVAL;
+	}
+
+	t->texture =
+		SDL_CreateTextureFromSurface(ctx->gfx.renderer, text_surface);
+	if (!t->texture) {
+		printf("[%s] Unable to create texture from rendered text! SDL Error: %s\n",
+		       __func__, SDL_GetError());
+		return -EINVAL;
+	}
+
+	t->w = text_surface->w;
+	t->h = text_surface->h;
+
+	SDL_FreeSurface(text_surface);
+
+	return 0;
+}
 
 static int load_from_rendered_text(struct game_context *ctx, TTF_Font *font,
 				   struct texture *t, char *string,
@@ -79,8 +110,34 @@ static int texture_render(struct game_context *ctx, struct texture *t, int x,
 	return 0;
 }
 
+static int texture_render_next(struct game_context *ctx, struct texture *t,
+			       int x, int y, SDL_Rect *clip)
+{
+	if (!t || !ctx) {
+		printf("[%s] invalid param\n", __func__);
+		return -EINVAL;
+	}
+
+	// set rendering space and render to screen
+	SDL_Rect render_quad = { x, y, t->w, t->h };
+
+	if (clip != NULL) {
+		render_quad.w = clip->w * 2 / 3;
+		render_quad.h = clip->h * 2 / 3;
+	}
+
+	// SET 3rd PARAM to 'clip'
+	SDL_RenderCopy(ctx->gfx.renderer, t->texture, clip, &render_quad);
+
+	return 0;
+}
+
 static int display_screen_title(struct game_context *ctx)
 {
+	int ret;
+	SDL_Rect r;
+	SDL_Color text_color = { 0, 0, 0 };
+
 	// clear screen
 	SDL_SetRenderDrawColor(ctx->gfx.renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 	SDL_RenderClear(ctx->gfx.renderer);
@@ -88,10 +145,64 @@ static int display_screen_title(struct game_context *ctx)
 	//render background
 	texture_render(ctx, &ctx->gfx.t_bg_title, 0, 0, NULL);
 
-	// render title text
+	// load and render title text
+	ret = load_gameover_message(ctx, ctx->font, &ctx->gfx.t_font_title,
+				    "Columns of Egypt", text_color);
 	texture_render(ctx, &ctx->gfx.t_font_title,
 		       (SCREEN_WIDTH - ctx->gfx.t_font_title.w) / 2,
-		       (SCREEN_HEIGHT - ctx->gfx.t_font_title.h) / 2, NULL);
+		       (SCREEN_HEIGHT - ctx->gfx.t_font_title.h) / 2 - 30,
+		       NULL);
+
+	// load and render title text
+	ret = load_gameover_message(ctx, ctx->font_choice,
+				    &ctx->gfx.t_font_title_startgame,
+				    "Start Game", text_color);
+	texture_render(ctx, &ctx->gfx.t_font_title_startgame,
+		       (SCREEN_WIDTH - ctx->gfx.t_font_title_startgame.w) / 2,
+		       (SCREEN_HEIGHT - ctx->gfx.t_font_title_startgame.h) / 2 +
+			       70,
+		       NULL);
+
+	// load and render title text
+	ret = load_gameover_message(ctx, ctx->font_choice,
+				    &ctx->gfx.t_font_title_options, "Options",
+				    text_color);
+	texture_render(ctx, &ctx->gfx.t_font_title_options,
+		       (SCREEN_WIDTH - ctx->gfx.t_font_title_options.w) / 2,
+		       (SCREEN_HEIGHT - ctx->gfx.t_font_title_options.h) / 2 +
+			       140,
+		       NULL);
+
+	// load and render title text
+	ret = load_gameover_message(ctx, ctx->font_choice,
+				    &ctx->gfx.t_font_title_credits, "Credits",
+				    text_color);
+	texture_render(ctx, &ctx->gfx.t_font_title_credits,
+		       (SCREEN_WIDTH - ctx->gfx.t_font_title_credits.w) / 2,
+		       (SCREEN_HEIGHT - ctx->gfx.t_font_title_credits.h) / 2 +
+			       210,
+		       NULL);
+
+	// load and render title text
+	ret = load_gameover_message(ctx, ctx->font_choice,
+				    &ctx->gfx.t_font_title_exit, "Exit",
+				    text_color);
+	texture_render(ctx, &ctx->gfx.t_font_title_exit,
+		       (SCREEN_WIDTH - ctx->gfx.t_font_title_exit.w) / 2,
+		       (SCREEN_HEIGHT - ctx->gfx.t_font_title_exit.h) / 2 + 280,
+		       NULL);
+
+	// cursor rectangle
+	for (int i = 0; i < 5; i++) {
+		r.w = ctx->gfx.t_font_title_startgame.w + 20 - 2 *i;
+		r.h = ctx->gfx.t_font_title_startgame.h + 20 - 2 * i;
+		r.x = (SCREEN_WIDTH - ctx->gfx.t_font_title_startgame.w) / 2 -
+		      10 + i ;
+		r.y = (SCREEN_HEIGHT - ctx->gfx.t_font_title_startgame.h) / 2 +
+		      70 - 10 + ctx->title_cursor * 70 + i;
+		SDL_SetRenderDrawColor(ctx->gfx.renderer, 100, 100, 100, 200);
+		SDL_RenderDrawRect(ctx->gfx.renderer, &r);
+	}
 
 	//render character
 	//mo_render(&mo, &camera);
@@ -196,8 +307,6 @@ static int game_text_render(struct game_context *ctx)
 {
 	int ret;
 
-	/*34 318*/
-
 	ret = texture_render(ctx, &ctx->gfx.t_font_game_next_label,
 			     GAME_NEXT_LABEL_X, GAME_NEXT_LABEL_Y, NULL);
 	if (ret < 0) {
@@ -211,7 +320,9 @@ static int game_text_render(struct game_context *ctx)
 		return ret;
 	}
 	ret = texture_render(ctx, &ctx->gfx.t_font_game_score_value,
-			     GAME_SCORE_VALUE_X, GAME_SCORE_VALUE_Y, NULL);
+			     GAME_SCORE_VALUE_X -
+				     ctx->gfx.t_font_game_score_value.w,
+			     GAME_SCORE_VALUE_Y, NULL);
 	if (ret < 0) {
 		printf("[%s] Failed to render text texture!\n", __func__);
 		return ret;
@@ -223,7 +334,9 @@ static int game_text_render(struct game_context *ctx)
 		return ret;
 	}
 	ret = texture_render(ctx, &ctx->gfx.t_font_game_level_value,
-			     GAME_LEVEL_VALUE_X, GAME_LEVEL_VALUE_Y, NULL);
+			     GAME_LEVEL_VALUE_X -
+				     ctx->gfx.t_font_game_level_value.w,
+			     GAME_LEVEL_VALUE_Y, NULL);
 	if (ret < 0) {
 		printf("[%s] Failed to render text texture!\n", __func__);
 		return ret;
@@ -235,7 +348,9 @@ static int game_text_render(struct game_context *ctx)
 		return ret;
 	}
 	ret = texture_render(ctx, &ctx->gfx.t_font_game_nbgem_value,
-			     GAME_NBGEM_VALUE_X, GAME_NBGEM_VALUE_Y, NULL);
+			     GAME_NBGEM_VALUE_X -
+				     ctx->gfx.t_font_game_nbgem_value.w,
+			     GAME_NBGEM_VALUE_Y, NULL);
 	if (ret < 0) {
 		printf("[%s] Failed to render text texture!\n", __func__);
 		return ret;
@@ -292,10 +407,11 @@ static int display_screen_game(struct game_context *ctx,
 
 	// render next trio /////////////////////////////////////////////
 	for (int i = 0; i < 3; i++) {
-		ret = texture_render(
+		ret = texture_render_next(
 			ctx, &ctx->gfx.t_gems_sheet, GAME_NEXT_TOPGEM_X,
-			GAME_NEXT_TOPGEM_Y + i * GEM_HEIGHT,
+			GAME_NEXT_TOPGEM_Y + i * GEM_HEIGHT * 2 / 3,
 			&ctx->gfx.gems_clip[ctx->gem_trio_next[i]->type]);
+
 		if (ret < 0)
 			printf("[%s] display next trio: texture_render FAILED\n",
 			       __func__);
@@ -328,6 +444,75 @@ static int display_screen_pause(struct game_context *ctx)
 
 static int display_screen_gameover(struct game_context *ctx)
 {
+	/* Declaring the surface. */
+	int ret;
+	char str[32] = { 0 };
+	SDL_Color text_color = { 255, 255, 255 };
+	SDL_Rect r;
+
+	// outer border
+	r.w = SCREEN_WIDTH * 2 / 3;
+	r.h = SCREEN_HEIGHT / 4;
+	r.x = SCREEN_WIDTH / 2 - r.w / 2;
+	r.y = SCREEN_HEIGHT / 2 - r.h / 2;
+	SDL_SetRenderDrawColor(ctx->gfx.renderer, 0, 0, 0, 200);
+	SDL_RenderFillRect(ctx->gfx.renderer, &r);
+
+	// mid border
+	r.w -= 20;
+	r.h -= 20;
+	r.x += 10;
+	r.y += 10;
+	SDL_SetRenderDrawColor(ctx->gfx.renderer, 80, 80, 80, 200);
+	SDL_RenderFillRect(ctx->gfx.renderer, &r);
+
+	// inner border
+	r.w -= 20;
+	r.h -= 20;
+	r.x += 10;
+	r.y += 10;
+	SDL_SetRenderDrawColor(ctx->gfx.renderer, 120, 120, 120, 200);
+	SDL_RenderFillRect(ctx->gfx.renderer, &r);
+
+	// gameover message
+	ret = load_gameover_message(ctx, ctx->font, &ctx->gfx.t_font_gameover,
+				    "Game Over", text_color);
+	if (ret < 0) {
+		printf("[%s] load_from_rendered_text\n", __func__);
+		return ret;
+	}
+	ret = texture_render(
+		ctx, &ctx->gfx.t_font_gameover,
+		SCREEN_WIDTH / 2 - ctx->gfx.t_font_gameover.w / 2,
+		SCREEN_HEIGHT / 2 - ctx->gfx.t_font_gameover.h / 2 - 20, NULL);
+	if (ret < 0) {
+		printf("[%s] Failed to render text texture!\n", __func__);
+		return ret;
+	}
+
+	// score in gameover window
+	char score[32] = { 0 };
+	sprintf(score, "score:   %d pts.", ctx->score);
+	ret = load_gameover_message(ctx, ctx->font_game_text,
+				    &ctx->gfx.t_font_gameover_score, score,
+				    text_color);
+	if (ret < 0) {
+		printf("[%s] load_from_rendered_text\n", __func__);
+		return ret;
+	}
+	ret = texture_render(
+		ctx, &ctx->gfx.t_font_gameover_score,
+		SCREEN_WIDTH / 2 - ctx->gfx.t_font_gameover_score.w / 2,
+		SCREEN_HEIGHT / 2 - ctx->gfx.t_font_gameover_score.h / 2 + 40,
+		NULL);
+	if (ret < 0) {
+		printf("[%s] Failed to render text texture!\n", __func__);
+		return ret;
+	}
+
+	//update screen
+	SDL_RenderPresent(ctx->gfx.renderer);
+
 	return 0;
 }
 
@@ -411,7 +596,7 @@ int main_display(struct game_context *ctx)
 		display_screen_gem_clearing(ctx);
 		break;
 	default:
-		printf("[%s] invalid state", __func__);
+		printf("[%s] invalid state = %d\n", __func__, ctx->status_cur);
 		break;
 	}
 

@@ -63,6 +63,13 @@ enum gem_status {
     GEM_STATE_CLEARING
 };
 
+enum title_choice {
+    TITLE_START = 0,
+    TITLE_OPTIONS,
+    TITLE_CREDITS,
+    TITLE_EXIT
+};
+
 enum gem_type {
     GEM_TYPE_TRIANGLE = 0,
     GEM_TYPE_SQUARE,
@@ -123,8 +130,14 @@ struct game_graphics{
 	struct SDL_Rect gems_clip[GEM_TYPE_LAST];
 
     // text texture
-	struct texture t_title;
+	//struct texture t_title;
 	struct texture t_font_title;
+    struct texture t_font_title_startgame;
+    struct texture t_font_title_options;
+    struct texture t_font_title_credits;
+    struct texture t_font_title_exit;
+	struct texture t_font_gameover;
+	struct texture t_font_gameover_score;
     struct texture t_font_game_next_label;
     struct texture t_font_game_score_label;
     struct texture t_font_game_score_value;
@@ -158,7 +171,9 @@ struct game_context {
     SDL_Event event;
     // action
     enum input_action action;
-
+    
+    // title cursor
+    enum title_choice title_cursor;
 
     // current status in state machine
     enum game_status status_cur;
@@ -185,6 +200,7 @@ struct game_context {
 
     // font to display text
     TTF_Font *font;
+    TTF_Font *font_choice;
     TTF_Font *font_game_text;
 
     // graphic related stuff

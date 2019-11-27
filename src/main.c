@@ -169,7 +169,15 @@ static int main_load_media(struct game_context *ctx)
 
 	//Open the font
 	ctx->font_game_text = TTF_OpenFont(PATH_FONT, 20);
-	if (!ctx->font) {
+	if (!ctx->font_game_text) {
+		printf("[%s] Failed to load font! SDL_ttf Error: %s\n",
+		       __func__, TTF_GetError());
+		return -EINVAL;
+	}
+
+	//Open the font
+	ctx->font_choice = TTF_OpenFont(PATH_FONT, 32);
+	if (!ctx->font_choice) {
 		printf("[%s] Failed to load font! SDL_ttf Error: %s\n",
 		       __func__, TTF_GetError());
 		return -EINVAL;
