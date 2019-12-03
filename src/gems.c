@@ -176,10 +176,11 @@ int gem_move_trio(struct game_context *ctx)
 		ctx->gem_trio[2]->y -= fall_speed;
 
 		// trio is grounded, check if it is a game over
-		if(ctx->gem_trio[0]->y < 10) {
+		if (ctx->gem_trio[0]->y < 10) {
 			printf("GAME OVER !!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 			ctx->status_cur = GAME_STATE_GAMEOVER;
-			ctx->status_prev = ctx->status_cur;
+			Mix_PlayChannel(-1, ctx->sfx.sfx_gameover, 0);
+			//ctx->status_prev = ctx->status_cur;
 		}
 	}
 

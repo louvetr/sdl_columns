@@ -19,12 +19,21 @@
 #define GEMS_PER_LEVEL 20
 #define MAX_SPEED 10
 
+#define SFX_CHANNEL 3 // arbitrary value
 
 #define PATH_BG_TITLE "./media/columns_bg_title_600_800.png"
 #define PATH_BG_GAME "./media/columns_bg_game_600_800.png"
 #define PATH_GEMS_SHEET "./media/gems_sheet_60x60.png"
 
 #define PATH_MUSIC_GAME "./media/desert_caravan-Myers_Music.mp3"
+#define PATH_MUSIC_TITLE "./media/fenek_studio_asfahan_128kbps.mp3"
+#define PATH_SFX_MENU_MOVE "./media/Eric_Maytas_Clank_3.mp3"
+#define PATH_SFX_MENU_SELECT "./media/Eric_Maytas_UI_Quirky1.mp3"
+#define PATH_SFX_GEM_SWAPPED "./media/Eric_Maytas_Coins1.mp3"
+#define PATH_SFX_GEM_GROUNDED "./media/stone_fall.mp3"
+#define PATH_SFX_GEM_CLEARED "./media/Rise03.mp3"
+#define PATH_SFX_GAMEOVER "./media/Start_Sounds_013.mp3"
+
 #define PATH_FONT "./media/Brassia-Regular.otf"
 
 #define SCREEN_WIDTH 600
@@ -155,8 +164,9 @@ struct game_media {
     // sounc_effects
     Mix_Chunk *sfx_menu_move;
     Mix_Chunk *sfx_menu_select;
-    Mix_Chunk *sfx_trio_grounded;
-    Mix_Chunk *sfx_trio_cleared;
+    Mix_Chunk *sfx_gem_swapped;
+    Mix_Chunk *sfx_gem_grounded;
+    Mix_Chunk *sfx_gem_cleared;
     Mix_Chunk *sfx_gameover;   
 };
 

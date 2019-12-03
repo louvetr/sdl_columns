@@ -27,12 +27,34 @@
 	return 0;
 }*/
 
+static int event_enter_title(struct game_context *ctx)
+{
+	int ret;
+
+	// init in game values
+	// TODO: set score, gem_cleared, level to 0
+
+	// stop music
+	Mix_HaltMusic();
+
+	// start to play music
+	if (!Mix_PlayingMusic()) {
+		// play music if none is playing
+		Mix_PlayMusic(ctx->sfx.music_title, -1);
+	}
+
+	return 0;
+}
+
 static int event_enter_game(struct game_context *ctx)
 {
 	int ret;
 
 	// init in game values
 	// TODO: set score, gem_cleared, level to 0
+
+	// stop music
+	Mix_HaltMusic();
 
 	// string to texture /////////////////////////////////////////////
 	ret = game_text_labels_to_texture(ctx);
@@ -112,6 +134,9 @@ static int event_title(struct game_context *ctx)
 			printf("[%s] game state goes to %d\n", __func__,
 			       ctx->status_cur);
 
+			Mix_PlayChannel(-1, ctx->sfx.sfx_menu_select, 0);
+			SDL_Delay(1000);
+
 			ret = event_enter_game(ctx);
 			if (ret < 0)
 				printf("[%s] event_enter_game FAILED",
@@ -129,12 +154,16 @@ static int event_title(struct game_context *ctx)
 	case ACTION_PAUSE:
 		break;
 	case ACTION_UP:
-		if (ctx->title_cursor != TITLE_START)
+		if (ctx->title_cursor != TITLE_START) {
 			ctx->title_cursor--;
+			Mix_PlayChannel(-1, ctx->sfx.sfx_menu_move, 0);
+		}
 		break;
 	case ACTION_DOWN:
-		if (ctx->title_cursor != TITLE_EXIT)
+		if (ctx->title_cursor != TITLE_EXIT) {
 			ctx->title_cursor++;
+			Mix_PlayChannel(-1, ctx->sfx.sfx_menu_move, 0);
+		}
 		break;
 	case ACTION_LEFT:
 		break;
@@ -172,6 +201,8 @@ static int event_quit(struct game_context *ctx)
 
 static int event_game(struct game_context *ctx)
 {
+	int ret;
+
 	/*printf("[%s] ENTER with cur = %d, prev = %d\n", __func__,
 	       ctx->status_cur, ctx->status_prev);*/
 	switch (ctx->action) {
@@ -182,8 +213,10 @@ static int event_game(struct game_context *ctx)
 		printf("[%s] game state goes to %d\n", __func__,
 		       ctx->status_cur);
 
-		// stop music
-		Mix_HaltMusic();
+		ret = event_enter_title(ctx);
+		if (ret < 0)
+			printf("[%s] event_enter_game FAILED", __func__);
+
 		break;
 	case ACTION_ENTER:
 		break;
@@ -208,6 +241,7 @@ static int event_game(struct game_context *ctx)
 		break;
 	case ACTION_UP:
 
+		Mix_PlayChannel(SFX_CHANNEL, ctx->sfx.sfx_gem_swapped, 0);
 		gem_toggle_trio(ctx->gem_trio);
 
 		break;
@@ -316,6 +350,20 @@ int main_event(struct game_context *ctx)
 
 	/*printf("[%s] ENTER with cur = %d, prev = %d\n", __func__,
 	       ctx->status_cur, ctx->status_prev);*/
+
+	// special case for when entering the game
+	if (ctx->status_cur == GAME_STATE_TITLE &&
+	    ctx->status_prev == GAME_STATE_UNKNOWN) {
+		event_enter_title(ctx);
+		ctx->status_prev = GAME_STATE_TITLE;
+	}
+
+	/*if (ctx->status_cur == GAME_STATE_GAMEOVER &&
+	    ctx->status_prev != GAME_STATE_GAMEOVER) {
+			Mix_PlayChannel(-1, ctx->sfx.sfx_gameover, 0);
+			ctx->status_prev = GAME_STATE_GAMEOVER;
+			SDL_Delay(3000);
+	}*/
 
 	while (SDL_PollEvent(&ctx->event) != 0) {
 		//user ask to quit

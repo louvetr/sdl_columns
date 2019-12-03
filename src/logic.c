@@ -34,6 +34,8 @@ static int logic_game(struct game_context *ctx)
 	if (ctx->gem_trio[2]->status != GEM_STATE_GROUNDED)
 		return 0;
 
+	Mix_PlayChannel(SFX_CHANNEL, ctx->sfx.sfx_gem_grounded, 0);
+
 	//printf("[%s] TRIO GROUNDED !!!!!!!!!!!!!!!!!\n", __func__);
 
 	// trio is grounded, let's process few things
@@ -83,6 +85,9 @@ static int logic_game(struct game_context *ctx)
 	// check combo
 	int nb_gems_cleared = gem_check_combo(ctx);
 	if (nb_gems_cleared > 0) {
+
+		Mix_PlayChannel(SFX_CHANNEL, ctx->sfx.sfx_gem_cleared, 0);
+
 		//ctx->score_multiplier++;
 		ctx->score += nb_gems_cleared * ctx->score_multiplier;
 		printf("[%s] score goes to %d\n", __func__, ctx->score);
@@ -128,6 +133,7 @@ static int logic_gem_clearing(struct game_context *ctx)
 	gem_apply_gravity(ctx->gem_array);
 	nb_gem_cleared = gem_check_combo(ctx);
 	if (nb_gem_cleared > 0) {
+		Mix_PlayChannel(SFX_CHANNEL, ctx->sfx.sfx_gem_cleared, 0);
 		ctx->score_multiplier++;
 		ctx->score += nb_gem_cleared * ctx->score_multiplier;
 		printf("[%s] score goes to %d\n", __func__, ctx->score);

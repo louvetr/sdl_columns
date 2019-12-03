@@ -70,7 +70,7 @@ static int main_init(struct game_context *ctx)
 	// set state to title screen
 	ctx->status_cur = GAME_STATE_TITLE;
 		printf("[%s] game state goes to %d\n", __func__, ctx->status_cur);
-	ctx->status_prev = GAME_STATE_TITLE;
+	ctx->status_prev = GAME_STATE_UNKNOWN;
 
 	for (int i = 0; i < GEM_TYPE_LAST; i++) {
 		ctx->gfx.gems_clip[i].w = GEM_WIDTH;
@@ -131,33 +131,51 @@ static int main_load_media(struct game_context *ctx)
 		printf("[%s] Failed to load game music\n", __func__);
 		return -EINVAL;
 	}
-	/*
+	ctx->sfx.music_title = Mix_LoadMUS(PATH_MUSIC_TITLE);
+	if (!ctx->sfx.music_game) {
+		printf("[%s] Failed to load title music\n", __func__);
+		return -EINVAL;
+	}
+
 	//Load sound effects
-	sfx_tires = Mix_LoadWAV("../medias/criss_court_1.wav");
-	if (!sfx_tires) {
-		printf("Failed to load sfx_tires! SDL_mixer Error: %s\n",
+	ctx->sfx.sfx_menu_move = Mix_LoadWAV(PATH_SFX_MENU_MOVE);
+	if (!ctx->sfx.sfx_menu_move) {
+		printf("Failed to load sfx menu move! SDL_mixer Error: %s\n",
 		       Mix_GetError());
 		return -EINVAL;
 	}
-	sfx_door = Mix_LoadWAV("../medias/fermeture_porte.wav");
-	if (!sfx_door) {
-		printf("Failed to load sfx_door! SDL_mixer Error: %s\n",
+	ctx->sfx.sfx_menu_select = Mix_LoadWAV(PATH_SFX_MENU_SELECT);
+	if (!ctx->sfx.sfx_menu_select) {
+		printf("Failed to load sfx menu select! SDL_mixer Error: %s\n",
 		       Mix_GetError());
 		return -EINVAL;
 	}
-	sfx_handbrake = Mix_LoadWAV("../medias/frein_a_main.wav");
-	if (!sfx_handbrake) {
-		printf("Failed to load sfx_tires! sfx_handbrake Error: %s\n",
+	ctx->sfx.sfx_gameover = Mix_LoadWAV(PATH_SFX_GAMEOVER);
+	if (!ctx->sfx.sfx_gameover) {
+		printf("Failed to load sfx gameover! SDL_mixer Error: %s\n",
 		       Mix_GetError());
 		return -EINVAL;
 	}
-	sfx_horn = Mix_LoadWAV("../medias/klaxon.wav");
-	if (!sfx_horn) {
-		printf("Failed to load sfx_horn! SDL_mixer Error: %s\n",
+	ctx->sfx.sfx_gem_swapped = Mix_LoadWAV(PATH_SFX_GEM_SWAPPED);
+	if (!ctx->sfx.sfx_gem_swapped) {
+		printf("Failed to load sfx gem swapped! SDL_mixer Error: %s\n",
 		       Mix_GetError());
 		return -EINVAL;
 	}
-*/
+	ctx->sfx.sfx_gem_cleared = Mix_LoadWAV(PATH_SFX_GEM_CLEARED);
+	if (!ctx->sfx.sfx_gem_cleared) {
+		printf("Failed to load sfx gem cleared! SDL_mixer Error: %s\n",
+		       Mix_GetError());
+		return -EINVAL;
+	}
+	ctx->sfx.sfx_gem_grounded = Mix_LoadWAV(PATH_SFX_GEM_GROUNDED);
+	if (!ctx->sfx.sfx_gem_grounded) {
+		printf("Failed to load sfx gem grounded! SDL_mixer Error: %s\n",
+		       Mix_GetError());
+		return -EINVAL;
+	}
+
+
 
 	//Open the font
 	ctx->font = TTF_OpenFont(PATH_FONT, 52);
