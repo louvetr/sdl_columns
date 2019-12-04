@@ -34,6 +34,9 @@ static int event_enter_title(struct game_context *ctx)
 	// init in game values
 	// TODO: set score, gem_cleared, level to 0
 
+	if (ctx->mute_music)
+		return 0;
+
 	// stop music
 	Mix_HaltMusic();
 
@@ -96,7 +99,7 @@ static int event_enter_game(struct game_context *ctx)
 	// TODO: manage screen transition elsewhere
 
 	// start to play music
-	if (!Mix_PlayingMusic()) {
+	if (!Mix_PlayingMusic() && !ctx->mute_music) {
 		// play music if none is playing
 		Mix_PlayMusic(ctx->sfx.music_game, -1);
 	}
@@ -134,7 +137,9 @@ static int event_title(struct game_context *ctx)
 			printf("[%s] game state goes to %d\n", __func__,
 			       ctx->status_cur);
 
-			Mix_PlayChannel(-1, ctx->sfx.sfx_menu_select, 0);
+			if (!ctx->mute_sfx)
+				Mix_PlayChannel(-1, ctx->sfx.sfx_menu_select,
+						0);
 			SDL_Delay(1000);
 
 			ret = event_enter_game(ctx);
@@ -156,13 +161,15 @@ static int event_title(struct game_context *ctx)
 	case ACTION_UP:
 		if (ctx->title_cursor != TITLE_START) {
 			ctx->title_cursor--;
-			Mix_PlayChannel(-1, ctx->sfx.sfx_menu_move, 0);
+			if (!ctx->mute_sfx)
+				Mix_PlayChannel(-1, ctx->sfx.sfx_menu_move, 0);
 		}
 		break;
 	case ACTION_DOWN:
 		if (ctx->title_cursor != TITLE_EXIT) {
 			ctx->title_cursor++;
-			Mix_PlayChannel(-1, ctx->sfx.sfx_menu_move, 0);
+			if (!ctx->mute_sfx)
+				Mix_PlayChannel(-1, ctx->sfx.sfx_menu_move, 0);
 		}
 		break;
 	case ACTION_LEFT:
@@ -241,7 +248,9 @@ static int event_game(struct game_context *ctx)
 		break;
 	case ACTION_UP:
 
-		Mix_PlayChannel(SFX_CHANNEL, ctx->sfx.sfx_gem_swapped, 0);
+		if (!ctx->mute_sfx)
+			Mix_PlayChannel(SFX_CHANNEL, ctx->sfx.sfx_gem_swapped,
+					0);
 		gem_toggle_trio(ctx->gem_trio);
 
 		break;
@@ -268,11 +277,30 @@ static int event_pause(struct game_context *ctx)
 	       ctx->status_cur, ctx->status_prev);*/
 	switch (ctx->action) {
 	case ACTION_ENTER:
+
+		if (!ctx->mute_sfx)
+			Mix_PlayChannel(-1, ctx->sfx.sfx_menu_select, 0);
+
+		switch (ctx->menu_cursor) {
+		case OPTION_MUSIC:
+			ctx->mute_music ? (ctx->mute_music = 0) :
+					  (ctx->mute_music = 1);
+			break;
+		case OPTION_SFX:
+			ctx->mute_sfx ? (ctx->mute_sfx = 0) :
+					(ctx->mute_sfx = 1);
+			break;
+		case OPTION_RESUME:
+			goto resume_game;
+			break;
+		default:
+			break;
+		}
 		break;
 
 	case ACTION_ESCAPE:
 	case ACTION_PAUSE:
-
+	resume_game:
 		// go back to title
 		if (ctx->status_prev == GAME_STATE_PAUSE) {
 			ctx->status_prev = ctx->status_cur;
@@ -284,15 +312,29 @@ static int event_pause(struct game_context *ctx)
 		}
 
 		// resume music
-		if (Mix_PausedMusic()) {
-			// play music
-			Mix_ResumeMusic();
+		if (!ctx->mute_music) {
+			if (Mix_PausedMusic()) {
+				// play music
+				Mix_ResumeMusic();
+			} else if (!Mix_PlayingMusic()) {
+				// play music if none is playing
+				Mix_PlayMusic(ctx->sfx.music_title, -1);
+			}
 		}
-
 		break;
 	case ACTION_UP:
+		if (ctx->menu_cursor != OPTION_MUSIC) {
+			ctx->menu_cursor--;
+			if (!ctx->mute_sfx)
+				Mix_PlayChannel(-1, ctx->sfx.sfx_menu_move, 0);
+		}
 		break;
 	case ACTION_DOWN:
+		if (ctx->menu_cursor != OPTION_RESUME) {
+			ctx->menu_cursor++;
+			if (!ctx->mute_sfx)
+				Mix_PlayChannel(-1, ctx->sfx.sfx_menu_move, 0);
+		}
 		break;
 	case ACTION_LEFT:
 		break;
@@ -357,13 +399,6 @@ int main_event(struct game_context *ctx)
 		event_enter_title(ctx);
 		ctx->status_prev = GAME_STATE_TITLE;
 	}
-
-	/*if (ctx->status_cur == GAME_STATE_GAMEOVER &&
-	    ctx->status_prev != GAME_STATE_GAMEOVER) {
-			Mix_PlayChannel(-1, ctx->sfx.sfx_gameover, 0);
-			ctx->status_prev = GAME_STATE_GAMEOVER;
-			SDL_Delay(3000);
-	}*/
 
 	while (SDL_PollEvent(&ctx->event) != 0) {
 		//user ask to quit

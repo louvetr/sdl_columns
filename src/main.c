@@ -43,7 +43,11 @@ static int main_init(struct game_context *ctx)
 		return -EINVAL;
 	}
 
+	SDL_SetRenderDrawBlendMode(ctx->gfx.renderer, SDL_BLENDMODE_BLEND);
+
 	SDL_SetRenderDrawColor(ctx->gfx.renderer, 0x00, 0xFF, 0xFF, 0x00);
+
+	//SDL_SetRenderDrawBlendMode(ctx->gfx.renderer, SDL_BLENDMODE_BLEND);
 
 	// init PNG loading
 	int img_flags = IMG_INIT_PNG;

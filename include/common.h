@@ -79,6 +79,12 @@ enum title_choice {
     TITLE_EXIT
 };
 
+enum menu_choice {
+    OPTION_MUSIC = 0,
+    OPTION_SFX,
+    OPTION_RESUME
+};
+
 enum gem_type {
     GEM_TYPE_TRIANGLE = 0,
     GEM_TYPE_SQUARE,
@@ -154,6 +160,9 @@ struct game_graphics{
     struct texture t_font_game_level_value;
     struct texture t_font_game_nbgem_label;
     struct texture t_font_game_nbgem_value;
+    struct texture t_font_options_music;
+    struct texture t_font_options_sfx;
+    struct texture t_font_options_resume;
 };
 
 struct game_media {
@@ -184,6 +193,8 @@ struct game_context {
     
     // title cursor
     enum title_choice title_cursor;
+    // menu cursor
+    enum menu_choice menu_cursor;
 
     // current status in state machine
     enum game_status status_cur;
@@ -218,6 +229,9 @@ struct game_context {
 
     // sounds
     struct game_media sfx;
+
+    int mute_sfx;
+    int mute_music;
 
     // timer reference
     Uint32 start_ticks;

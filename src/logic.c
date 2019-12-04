@@ -12,7 +12,7 @@ static int logic_title(struct game_context *ctx)
 static int logic_game(struct game_context *ctx)
 {
 	int ret;
-		
+
 	// RLTDBG
 	/*for (int i = 0; i < PG_NB_COLUMNS; i++) {
 		for (int j = 0; j < PG_NB_ROWS; j++) {
@@ -34,7 +34,8 @@ static int logic_game(struct game_context *ctx)
 	if (ctx->gem_trio[2]->status != GEM_STATE_GROUNDED)
 		return 0;
 
-	Mix_PlayChannel(SFX_CHANNEL, ctx->sfx.sfx_gem_grounded, 0);
+	if (!ctx->mute_sfx)
+		Mix_PlayChannel(SFX_CHANNEL, ctx->sfx.sfx_gem_grounded, 0);
 
 	//printf("[%s] TRIO GROUNDED !!!!!!!!!!!!!!!!!\n", __func__);
 
@@ -85,21 +86,24 @@ static int logic_game(struct game_context *ctx)
 	// check combo
 	int nb_gems_cleared = gem_check_combo(ctx);
 	if (nb_gems_cleared > 0) {
-
-		Mix_PlayChannel(SFX_CHANNEL, ctx->sfx.sfx_gem_cleared, 0);
+		if (!ctx->mute_sfx)
+			Mix_PlayChannel(SFX_CHANNEL, ctx->sfx.sfx_gem_cleared,
+					0);
 
 		//ctx->score_multiplier++;
 		ctx->score += nb_gems_cleared * ctx->score_multiplier;
 		printf("[%s] score goes to %d\n", __func__, ctx->score);
 		ctx->nb_gems_cleared += nb_gems_cleared;
 		ctx->level = ctx->nb_gems_cleared / GEMS_PER_LEVEL + 1;
-		if(ctx->level > MAX_SPEED)
+		if (ctx->level > MAX_SPEED)
 			ctx->level = MAX_SPEED;
 		ctx->status_prev = ctx->status_cur;
 		ctx->status_cur = GAME_STATE_CLEAR_GEMS;
-		printf("[%s] game state goes to %d\n", __func__, ctx->status_cur);
+		printf("[%s] game state goes to %d\n", __func__,
+		       ctx->status_cur);
 		ctx->fall_fast = 0;
-		printf("[%s] game state goes to GAME_STATE_CLEAR_GEMS\n", __func__);
+		printf("[%s] game state goes to GAME_STATE_CLEAR_GEMS\n",
+		       __func__);
 	}
 
 	// update score and other values
@@ -126,24 +130,26 @@ static int logic_quit(struct game_context *ctx)
 static int logic_gem_clearing(struct game_context *ctx)
 {
 	int nb_gem_cleared;
-	
+
 	if (ctx->status_prev == GAME_STATE_GAME)
-	 	goto exit;
+		goto exit;
 
 	gem_apply_gravity(ctx->gem_array);
 	nb_gem_cleared = gem_check_combo(ctx);
 	if (nb_gem_cleared > 0) {
-		Mix_PlayChannel(SFX_CHANNEL, ctx->sfx.sfx_gem_cleared, 0);
+		if (!ctx->mute_sfx)
+			Mix_PlayChannel(SFX_CHANNEL, ctx->sfx.sfx_gem_cleared,
+					0);
 		ctx->score_multiplier++;
 		ctx->score += nb_gem_cleared * ctx->score_multiplier;
 		printf("[%s] score goes to %d\n", __func__, ctx->score);
 		ctx->nb_gems_cleared += nb_gem_cleared;
 		ctx->level = ctx->nb_gems_cleared / GEMS_PER_LEVEL + 1;
-		if(ctx->level > MAX_SPEED)
+		if (ctx->level > MAX_SPEED)
 			ctx->level = MAX_SPEED;
-		printf("[%s] game state stay ins to GAME_STATE_CLEAR_GEMS\n", __func__);
-	}
-	else {
+		printf("[%s] game state stay ins to GAME_STATE_CLEAR_GEMS\n",
+		       __func__);
+	} else {
 		ctx->score_multiplier = 1;
 		ctx->status_cur = GAME_STATE_GAME;
 		printf("[%s] game state goes to GAME_STATE_GAME\n", __func__);
@@ -151,7 +157,7 @@ static int logic_gem_clearing(struct game_context *ctx)
 
 exit:
 	ctx->status_prev = ctx->status_cur;
-		printf("[%s] game state goes to %d\n", __func__, ctx->status_cur);
+	printf("[%s] game state goes to %d\n", __func__, ctx->status_cur);
 	return 0;
 }
 
