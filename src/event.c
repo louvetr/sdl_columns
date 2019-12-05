@@ -151,7 +151,11 @@ static int event_title(struct game_context *ctx)
 				       __func__);
 			break;
 		case TITLE_OPTIONS:
+			ctx->title_status = TITLE_STATE_OPTIONS;
+			break;
 		case TITLE_CREDITS:
+			ctx->title_status = TITLE_STATE_CREDIT;
+			break;
 		default:
 			break;
 		}
@@ -182,6 +186,87 @@ static int event_title(struct game_context *ctx)
 
 	return 0;
 }
+
+static int event_screen_options(struct game_context *ctx)
+{
+	switch (ctx->action) {
+	case ACTION_ENTER:
+
+		if (!ctx->mute_sfx)
+			Mix_PlayChannel(-1, ctx->sfx.sfx_menu_select, 0);
+
+		switch (ctx->menu_cursor) {
+		case OPTION_MUSIC:
+			if (ctx->mute_music) {
+				ctx->mute_music = 0;
+				if (!Mix_PlayingMusic())
+					Mix_PlayMusic(ctx->sfx.music_title, -1);
+			} else {
+				ctx->mute_music = 1;
+				Mix_HaltMusic();
+			}
+			break;
+		case OPTION_SFX:
+			ctx->mute_sfx ? (ctx->mute_sfx = 0) :
+					(ctx->mute_sfx = 1);
+			break;
+		case OPTION_RESUME:
+			ctx->title_status = TITLE_STATE_MENU;
+			break;
+		default:
+			break;
+		}
+		break;
+
+	case ACTION_ESCAPE:
+	case ACTION_PAUSE:
+		ctx->title_status = TITLE_STATE_MENU;
+		/*// go back to title
+		if (ctx->status_prev == GAME_STATE_PAUSE) {
+			ctx->status_prev = ctx->status_cur;
+			ctx->status_cur = GAME_STATE_GAME;
+			printf("[%s] game state goes to %d\n", __func__,
+			       ctx->status_cur);
+		} else {
+			ctx->status_prev = GAME_STATE_PAUSE;
+		}
+
+		// resume music
+		if (!ctx->mute_music) {
+			if (Mix_PausedMusic()) {
+				// play music
+				Mix_ResumeMusic();
+			} else if (!Mix_PlayingMusic()) {
+				// play music if none is playing
+				Mix_PlayMusic(ctx->sfx.music_title, -1);
+			}
+		}*/
+		break;
+	case ACTION_UP:
+		if (ctx->menu_cursor != OPTION_MUSIC) {
+			ctx->menu_cursor--;
+			if (!ctx->mute_sfx)
+				Mix_PlayChannel(-1, ctx->sfx.sfx_menu_move, 0);
+		}
+		break;
+	case ACTION_DOWN:
+		if (ctx->menu_cursor != OPTION_RESUME) {
+			ctx->menu_cursor++;
+			if (!ctx->mute_sfx)
+				Mix_PlayChannel(-1, ctx->sfx.sfx_menu_move, 0);
+		}
+		break;
+	case ACTION_LEFT:
+		break;
+	case ACTION_RIGHT:
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+
 static int event_quit(struct game_context *ctx)
 {
 	switch (ctx->action) {
@@ -451,7 +536,19 @@ int main_event(struct game_context *ctx)
 
 		switch (ctx->status_cur) {
 		case GAME_STATE_TITLE:
-			event_title(ctx);
+			switch (ctx->title_status) {
+			case TITLE_STATE_MENU:
+				event_title(ctx);
+				break;
+			case TITLE_STATE_OPTIONS:
+				event_screen_options(ctx);
+				break;
+			case TITLE_STATE_CREDIT:
+				//event_screen_credits(ctx);
+				break;
+			default:
+				break;
+			}
 			break;
 		case GAME_STATE_QUIT:
 			event_quit(ctx);

@@ -79,6 +79,14 @@ enum title_choice {
     TITLE_EXIT
 };
 
+
+enum title_state {
+    TITLE_STATE_MENU = 0,
+    TITLE_STATE_OPTIONS,
+    TITLE_STATE_CREDIT,
+};
+
+
 enum menu_choice {
     OPTION_MUSIC = 0,
     OPTION_SFX,
@@ -190,7 +198,9 @@ struct game_context {
     SDL_Event event;
     // action
     enum input_action action;
-    
+
+    // title state
+    enum title_state title_status; 
     // title cursor
     enum title_choice title_cursor;
     // menu cursor

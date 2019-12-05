@@ -438,7 +438,7 @@ static int display_screen_game(struct game_context *ctx,
 }
 
 //static int display_screen_pause(struct game_context *ctx)
-static int display_menu_options(struct game_context *ctx)
+static int display_screen_options(struct game_context *ctx)
 {
 	/* Declaring the surface. */
 	int ret;
@@ -536,7 +536,7 @@ static int display_menu_options(struct game_context *ctx)
 		r.x = (SCREEN_WIDTH - ctx->gfx.t_font_options_music.w) / 2 -
 		      10 + i;
 		r.y = (SCREEN_HEIGHT - ctx->gfx.t_font_options_music.h) / 2 +
-		      /*40*/ - 30 + ctx->menu_cursor * 60 + i;
+		      /*40*/ -30 + ctx->menu_cursor * 60 + i;
 		SDL_SetRenderDrawColor(ctx->gfx.renderer, 180, 180, 180, 200);
 		SDL_RenderDrawRect(ctx->gfx.renderer, &r);
 	}
@@ -687,7 +687,19 @@ int main_display(struct game_context *ctx)
 
 	switch (ctx->status_cur) {
 	case GAME_STATE_TITLE:
-		display_screen_title(ctx);
+		switch (ctx->title_status) {
+		case TITLE_STATE_MENU:
+			display_screen_title(ctx);
+			break;
+		case TITLE_STATE_OPTIONS:
+			display_screen_options(ctx);
+			break;
+		case TITLE_STATE_CREDIT:
+			//display_screen_credits(ctx);
+			break;
+		default:
+			break;
+		}
 		break;
 	case GAME_STATE_QUIT:
 		display_screen_quit(ctx);
@@ -697,7 +709,7 @@ int main_display(struct game_context *ctx)
 		break;
 	case GAME_STATE_PAUSE:
 		//display_screen_pause(ctx);
-		display_menu_options(ctx);
+		display_screen_options(ctx);
 		break;
 	case GAME_STATE_GAMEOVER:
 		display_screen_gameover(ctx);
