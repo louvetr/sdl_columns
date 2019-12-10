@@ -205,18 +205,10 @@ static int display_screen_title(struct game_context *ctx)
 		SDL_RenderDrawRect(ctx->gfx.renderer, &r);
 	}
 
-	//render character
-	//mo_render(&mo, &camera);
-
 	//update screen
 	SDL_RenderPresent(ctx->gfx.renderer);
 
-	return 0;
-}
-
-static int display_screen_quit(struct game_context *ctx)
-{
-	return 0;
+	return ret;
 }
 
 int game_text_labels_to_texture(struct game_context *ctx)
@@ -420,9 +412,6 @@ static int display_screen_game(struct game_context *ctx,
 
 	// render falling trio /////////////////////////////////////////////
 	for (int i = 0; i < 3; i++) {
-		/*printf("[%s] gem[%d]: %d, %d\n", __func__, i,
-		       ctx->gem_trio[i].x, ctx->gem_trio[i].y);*/
-
 		ret = texture_render(
 			ctx, &ctx->gfx.t_gems_sheet, ctx->gem_trio[i]->x,
 			ctx->gem_trio[i]->y,
@@ -442,7 +431,7 @@ static int display_screen_credits(struct game_context *ctx)
 {
 	int ret;
 	int x_ref = SCREEN_WIDTH / 5;
-	int y_ref = SCREEN_HEIGHT  * 5 / 12;
+	int y_ref = SCREEN_HEIGHT * 5 / 12;
 	int y_gap = 25;
 	SDL_Color text_color = { 255, 255, 255 };
 	SDL_Rect r;
@@ -451,7 +440,7 @@ static int display_screen_credits(struct game_context *ctx)
 	r.w = SCREEN_WIDTH * 4 / 5;
 	r.h = SCREEN_HEIGHT / 3;
 	r.x = SCREEN_WIDTH / 2 - r.w / 2;
-	r.y = SCREEN_HEIGHT / 2 - 100 /*r.h / 2*/;
+	r.y = SCREEN_HEIGHT / 2 - 100;
 	SDL_SetRenderDrawColor(ctx->gfx.renderer, 0, 0, 0, 5);
 	SDL_RenderFillRect(ctx->gfx.renderer, &r);
 
@@ -471,75 +460,73 @@ static int display_screen_credits(struct game_context *ctx)
 	SDL_SetRenderDrawColor(ctx->gfx.renderer, 120, 120, 120, 5);
 	SDL_RenderFillRect(ctx->gfx.renderer, &r);
 
-
 	ret = load_from_rendered_text(ctx, ctx->font_game_text,
-				      &ctx->gfx.t_font_credits_music_label, "Music:",
-				      text_color);
+				      &ctx->gfx.t_font_credits_music_label,
+				      "Music:", text_color);
 	if (ret < 0) {
 		printf("[%s] load_from_rendered_text\n", __func__);
 		return ret;
 	}
-	ret = texture_render(ctx, &ctx->gfx.t_font_credits_music_label,
-			     x_ref, y_ref, NULL);
+	ret = texture_render(ctx, &ctx->gfx.t_font_credits_music_label, x_ref,
+			     y_ref, NULL);
 	if (ret < 0) {
 		printf("[%s] Failed to render text texture!\n", __func__);
 		return ret;
 	}
 
 	ret = load_from_rendered_text(ctx, ctx->font_game_text,
-				      &ctx->gfx.t_font_credits_music_1, "- 'Desert caravan' by Myers Music",
+				      &ctx->gfx.t_font_credits_music_1,
+				      "- 'Desert caravan' by Myers Music",
 				      text_color);
 	if (ret < 0) {
 		printf("[%s] load_from_rendered_text\n", __func__);
 		return ret;
 	}
-	ret = texture_render(ctx, &ctx->gfx.t_font_credits_music_1,
-			     x_ref, y_ref + y_gap, NULL);
+	ret = texture_render(ctx, &ctx->gfx.t_font_credits_music_1, x_ref,
+			     y_ref + y_gap, NULL);
 	if (ret < 0) {
 		printf("[%s] Failed to render text texture!\n", __func__);
 		return ret;
 	}
 
-
 	ret = load_from_rendered_text(ctx, ctx->font_game_text,
-				      &ctx->gfx.t_font_credits_music_2, "- 'Asfahan' by Fenek Studio",
+				      &ctx->gfx.t_font_credits_music_2,
+				      "- 'Asfahan' by Fenek Studio",
 				      text_color);
 	if (ret < 0) {
 		printf("[%s] load_from_rendered_text\n", __func__);
 		return ret;
 	}
-	ret = texture_render(ctx, &ctx->gfx.t_font_credits_music_2,
-			     x_ref, y_ref + y_gap * 2, NULL);
+	ret = texture_render(ctx, &ctx->gfx.t_font_credits_music_2, x_ref,
+			     y_ref + y_gap * 2, NULL);
 	if (ret < 0) {
 		printf("[%s] Failed to render text texture!\n", __func__);
 		return ret;
 	}
 
-
 	ret = load_from_rendered_text(ctx, ctx->font_game_text,
-				      &ctx->gfx.t_font_credits_sfx_label, "Sound Effects:",
-				      text_color);
+				      &ctx->gfx.t_font_credits_sfx_label,
+				      "Sound Effects:", text_color);
 	if (ret < 0) {
 		printf("[%s] load_from_rendered_text\n", __func__);
 		return ret;
 	}
-	ret = texture_render(ctx, &ctx->gfx.t_font_credits_sfx_label,
-			     x_ref, y_ref  + y_gap * 4, NULL);
+	ret = texture_render(ctx, &ctx->gfx.t_font_credits_sfx_label, x_ref,
+			     y_ref + y_gap * 4, NULL);
 	if (ret < 0) {
 		printf("[%s] Failed to render text texture!\n", __func__);
 		return ret;
 	}
 
-
 	ret = load_from_rendered_text(ctx, ctx->font_game_text,
-				      &ctx->gfx.t_font_credits_sfx_1, "- by Eric Maytas",
-				      text_color);
+				      &ctx->gfx.t_font_credits_sfx_1,
+				      "- by Eric Maytas", text_color);
 	if (ret < 0) {
 		printf("[%s] load_from_rendered_text\n", __func__);
 		return ret;
 	}
-	ret = texture_render(ctx, &ctx->gfx.t_font_credits_sfx_1,
-			     x_ref, y_ref  + y_gap * 5, NULL);
+	ret = texture_render(ctx, &ctx->gfx.t_font_credits_sfx_1, x_ref,
+			     y_ref + y_gap * 5, NULL);
 	if (ret < 0) {
 		printf("[%s] Failed to render text texture!\n", __func__);
 		return ret;
@@ -551,13 +538,10 @@ static int display_screen_credits(struct game_context *ctx)
 	return 0;
 }
 
-
-//static int display_screen_pause(struct game_context *ctx)
 static int display_screen_options(struct game_context *ctx)
 {
 	/* Declaring the surface. */
 	int ret;
-	char str[32] = { 0 };
 	SDL_Color text_color = { 255, 255, 255 };
 	SDL_Rect r;
 
@@ -565,7 +549,7 @@ static int display_screen_options(struct game_context *ctx)
 	r.w = SCREEN_WIDTH * 2 / 3;
 	r.h = SCREEN_HEIGHT / 3;
 	r.x = SCREEN_WIDTH / 2 - r.w / 2;
-	r.y = SCREEN_HEIGHT / 2 - 100 /*r.h / 2*/;
+	r.y = SCREEN_HEIGHT / 2 - 100;
 	SDL_SetRenderDrawColor(ctx->gfx.renderer, 0, 0, 0, 5);
 	SDL_RenderFillRect(ctx->gfx.renderer, &r);
 
@@ -586,7 +570,6 @@ static int display_screen_options(struct game_context *ctx)
 	SDL_RenderFillRect(ctx->gfx.renderer, &r);
 
 	// music option message
-
 	char msg[32] = { 0 };
 	sprintf(msg, "Music: %s", ctx->mute_music ? "OFF" : " ON");
 	ret = load_text_message(ctx, ctx->font_choice,
@@ -666,7 +649,6 @@ static int display_screen_gameover(struct game_context *ctx)
 {
 	/* Declaring the surface. */
 	int ret;
-	char str[32] = { 0 };
 	SDL_Color text_color = { 255, 255, 255 };
 	SDL_Rect r;
 
@@ -676,7 +658,6 @@ static int display_screen_gameover(struct game_context *ctx)
 	r.x = SCREEN_WIDTH / 2 - r.w / 2;
 	r.y = SCREEN_HEIGHT / 2 - r.h / 2;
 	SDL_SetRenderDrawColor(ctx->gfx.renderer, 0, 0, 0, 5);
-	//SDL_SetRenderDrawColor(ctx->gfx.renderer, 255, 255, 255, 5);
 	SDL_RenderFillRect(ctx->gfx.renderer, &r);
 
 	// mid border
@@ -694,9 +675,6 @@ static int display_screen_gameover(struct game_context *ctx)
 	r.y += 10;
 	SDL_SetRenderDrawColor(ctx->gfx.renderer, 120, 120, 120, 5);
 	SDL_RenderFillRect(ctx->gfx.renderer, &r);
-
-	//SDL_SetRenderDrawBlendMode(ctx->gfx.renderer, SDL_BLENDMODE_BLEND);
-	//SDL_BlitSurface( &r , NULL , screen , &rect );
 
 	// gameover message
 	ret = load_text_message(ctx, ctx->font, &ctx->gfx.t_font_gameover,
@@ -798,7 +776,6 @@ int main_display(struct game_context *ctx)
 		printf("invalid parameter\n");
 		return -EINVAL;
 	}
-	//printf("[%s] ENTER with cur = %d, prev = %d\n", __func__, ctx->status_cur, ctx->status_prev);
 
 	switch (ctx->status_cur) {
 	case GAME_STATE_TITLE:
@@ -817,7 +794,6 @@ int main_display(struct game_context *ctx)
 		}
 		break;
 	case GAME_STATE_QUIT:
-		display_screen_quit(ctx);
 		break;
 	case GAME_STATE_GAME:
 		display_screen_game(ctx, DISPLAY_ALL_GEMS);

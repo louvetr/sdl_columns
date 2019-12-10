@@ -62,7 +62,6 @@ enum game_status {
     GAME_STATE_PAUSE,
     GAME_STATE_GAMEOVER,
     GAME_STATE_QUIT
-    // TODO: add MENU
 };
 
 enum gem_status {
@@ -79,13 +78,11 @@ enum title_choice {
     TITLE_EXIT
 };
 
-
 enum title_state {
     TITLE_STATE_MENU = 0,
     TITLE_STATE_OPTIONS,
     TITLE_STATE_CREDIT,
 };
-
 
 enum menu_choice {
     OPTION_MUSIC = 0,
@@ -115,10 +112,10 @@ enum input_action {
     ACTION_RIGHT
 };
 
+
 /////////////////////////////////////////////////////////////////
 // structures
 /////////////////////////////////////////////////////////////////
-
 
 // gem unit definition
 struct gem {
@@ -152,8 +149,7 @@ struct game_graphics{
 	struct texture t_gems_sheet;
 	struct SDL_Rect gems_clip[GEM_TYPE_LAST];
 
-    // text texture
-	//struct texture t_title;
+    // text textures
 	struct texture t_font_title;
     struct texture t_font_title_startgame;
     struct texture t_font_title_options;
@@ -264,18 +260,10 @@ int load_texture_from_file(struct game_context *ctx, char *path,
 			   struct texture *in);
 int main_logic(struct game_context *ctx);
 
-
-//int gem_create_trio(struct gem **trio);
 int gem_create_trio(struct gem *trio[3]);
-/*int gem_check_collision(struct gem *g,
-			struct gem *array[PG_NB_COLUMNS][PG_NB_ROWS]);*/
-
 int gem_move_trio(struct game_context *ctx);
-//int gem_toggle_trio(struct gem **trio);
 int gem_toggle_trio(struct gem *trio[3]);
 int gem_check_combo(struct game_context *ctx);
 int gem_apply_gravity(struct gem *array[PG_NB_COLUMNS][PG_NB_ROWS]);
 
-
-// TODO: sahll be static
 int game_text_labels_to_texture(struct game_context *ctx);

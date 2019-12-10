@@ -44,10 +44,7 @@ static int main_init(struct game_context *ctx)
 	}
 
 	SDL_SetRenderDrawBlendMode(ctx->gfx.renderer, SDL_BLENDMODE_BLEND);
-
 	SDL_SetRenderDrawColor(ctx->gfx.renderer, 0x00, 0xFF, 0xFF, 0x00);
-
-	//SDL_SetRenderDrawBlendMode(ctx->gfx.renderer, SDL_BLENDMODE_BLEND);
 
 	// init PNG loading
 	int img_flags = IMG_INIT_PNG;
@@ -73,7 +70,6 @@ static int main_init(struct game_context *ctx)
 
 	// set state to title screen
 	ctx->status_cur = GAME_STATE_TITLE;
-		printf("[%s] game state goes to %d\n", __func__, ctx->status_cur);
 	ctx->status_prev = GAME_STATE_UNKNOWN;
 
 	for (int i = 0; i < GEM_TYPE_LAST; i++) {
@@ -122,12 +118,6 @@ static int main_load_media(struct game_context *ctx)
 		printf("[%s] Failed to load gem sheet PNG!\n", __func__);
 		return ret;
 	}
-	// load level/tile map file
-	/*ret = set_gems_textures(ctx);
-	if (ret < 0) {
-		printf("[%s] set_gems_textures FAILED\n", __func__);
-		return ret;
-	}*/
 
 	// load music
 	ctx->sfx.music_game = Mix_LoadMUS(PATH_MUSIC_GAME);
@@ -179,8 +169,6 @@ static int main_load_media(struct game_context *ctx)
 		return -EINVAL;
 	}
 
-
-
 	//Open the font
 	ctx->font = TTF_OpenFont(PATH_FONT, 52);
 	if (!ctx->font) {
@@ -215,7 +203,7 @@ static int main_sleep(struct game_context *ctx)
 	int frame_ticks = SDL_GetTicks() - ctx->start_ticks;
 	if (frame_ticks < SCREEN_TICKS_PER_FRAME)
 		SDL_Delay(SCREEN_TICKS_PER_FRAME - frame_ticks);
-	
+
 	ctx->start_ticks = SDL_GetTicks();
 
 	return 0;
@@ -259,9 +247,6 @@ int main()
 
 	// free resources
 	//main_destroy(ctx);
-
-	// TODO: remove
-	//sleep(5);
 
 	free(ctx);
 
