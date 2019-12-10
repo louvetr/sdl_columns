@@ -171,6 +171,11 @@ struct game_graphics{
     struct texture t_font_options_music;
     struct texture t_font_options_sfx;
     struct texture t_font_options_resume;
+    struct texture t_font_credits_music_label;
+    struct texture t_font_credits_music_1;
+    struct texture t_font_credits_music_2;
+    struct texture t_font_credits_sfx_label;
+    struct texture t_font_credits_sfx_1;
 };
 
 struct game_media {

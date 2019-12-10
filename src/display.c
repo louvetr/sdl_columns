@@ -30,7 +30,8 @@ static int load_text_message(struct game_context *ctx, TTF_Font *font,
 			     struct texture *t, char *string,
 			     SDL_Color text_color)
 {
-	SDL_DestroyTexture(t->texture);
+	if (t->texture)
+		SDL_DestroyTexture(t->texture);
 
 	SDL_Surface *text_surface =
 		TTF_RenderText_Solid(font, string, text_color);
@@ -437,6 +438,120 @@ static int display_screen_game(struct game_context *ctx,
 	return 0;
 }
 
+static int display_screen_credits(struct game_context *ctx)
+{
+	int ret;
+	int x_ref = SCREEN_WIDTH / 5;
+	int y_ref = SCREEN_HEIGHT  * 5 / 12;
+	int y_gap = 25;
+	SDL_Color text_color = { 255, 255, 255 };
+	SDL_Rect r;
+
+	// outer border
+	r.w = SCREEN_WIDTH * 4 / 5;
+	r.h = SCREEN_HEIGHT / 3;
+	r.x = SCREEN_WIDTH / 2 - r.w / 2;
+	r.y = SCREEN_HEIGHT / 2 - 100 /*r.h / 2*/;
+	SDL_SetRenderDrawColor(ctx->gfx.renderer, 0, 0, 0, 5);
+	SDL_RenderFillRect(ctx->gfx.renderer, &r);
+
+	// mid border
+	r.w -= 20;
+	r.h -= 20;
+	r.x += 10;
+	r.y += 10;
+	SDL_SetRenderDrawColor(ctx->gfx.renderer, 80, 80, 80, 5);
+	SDL_RenderFillRect(ctx->gfx.renderer, &r);
+
+	// inner border
+	r.w -= 20;
+	r.h -= 20;
+	r.x += 10;
+	r.y += 10;
+	SDL_SetRenderDrawColor(ctx->gfx.renderer, 120, 120, 120, 5);
+	SDL_RenderFillRect(ctx->gfx.renderer, &r);
+
+
+	ret = load_from_rendered_text(ctx, ctx->font_game_text,
+				      &ctx->gfx.t_font_credits_music_label, "Music:",
+				      text_color);
+	if (ret < 0) {
+		printf("[%s] load_from_rendered_text\n", __func__);
+		return ret;
+	}
+	ret = texture_render(ctx, &ctx->gfx.t_font_credits_music_label,
+			     x_ref, y_ref, NULL);
+	if (ret < 0) {
+		printf("[%s] Failed to render text texture!\n", __func__);
+		return ret;
+	}
+
+	ret = load_from_rendered_text(ctx, ctx->font_game_text,
+				      &ctx->gfx.t_font_credits_music_1, "- 'Desert caravan' by Myers Music",
+				      text_color);
+	if (ret < 0) {
+		printf("[%s] load_from_rendered_text\n", __func__);
+		return ret;
+	}
+	ret = texture_render(ctx, &ctx->gfx.t_font_credits_music_1,
+			     x_ref, y_ref + y_gap, NULL);
+	if (ret < 0) {
+		printf("[%s] Failed to render text texture!\n", __func__);
+		return ret;
+	}
+
+
+	ret = load_from_rendered_text(ctx, ctx->font_game_text,
+				      &ctx->gfx.t_font_credits_music_2, "- 'Asfahan' by Fenek Studio",
+				      text_color);
+	if (ret < 0) {
+		printf("[%s] load_from_rendered_text\n", __func__);
+		return ret;
+	}
+	ret = texture_render(ctx, &ctx->gfx.t_font_credits_music_2,
+			     x_ref, y_ref + y_gap * 2, NULL);
+	if (ret < 0) {
+		printf("[%s] Failed to render text texture!\n", __func__);
+		return ret;
+	}
+
+
+	ret = load_from_rendered_text(ctx, ctx->font_game_text,
+				      &ctx->gfx.t_font_credits_sfx_label, "Sound Effects:",
+				      text_color);
+	if (ret < 0) {
+		printf("[%s] load_from_rendered_text\n", __func__);
+		return ret;
+	}
+	ret = texture_render(ctx, &ctx->gfx.t_font_credits_sfx_label,
+			     x_ref, y_ref  + y_gap * 4, NULL);
+	if (ret < 0) {
+		printf("[%s] Failed to render text texture!\n", __func__);
+		return ret;
+	}
+
+
+	ret = load_from_rendered_text(ctx, ctx->font_game_text,
+				      &ctx->gfx.t_font_credits_sfx_1, "- by Eric Maytas",
+				      text_color);
+	if (ret < 0) {
+		printf("[%s] load_from_rendered_text\n", __func__);
+		return ret;
+	}
+	ret = texture_render(ctx, &ctx->gfx.t_font_credits_sfx_1,
+			     x_ref, y_ref  + y_gap * 5, NULL);
+	if (ret < 0) {
+		printf("[%s] Failed to render text texture!\n", __func__);
+		return ret;
+	}
+
+	//update screen
+	SDL_RenderPresent(ctx->gfx.renderer);
+
+	return 0;
+}
+
+
 //static int display_screen_pause(struct game_context *ctx)
 static int display_screen_options(struct game_context *ctx)
 {
@@ -695,7 +810,7 @@ int main_display(struct game_context *ctx)
 			display_screen_options(ctx);
 			break;
 		case TITLE_STATE_CREDIT:
-			//display_screen_credits(ctx);
+			display_screen_credits(ctx);
 			break;
 		default:
 			break;
@@ -708,7 +823,6 @@ int main_display(struct game_context *ctx)
 		display_screen_game(ctx, DISPLAY_ALL_GEMS);
 		break;
 	case GAME_STATE_PAUSE:
-		//display_screen_pause(ctx);
 		display_screen_options(ctx);
 		break;
 	case GAME_STATE_GAMEOVER:

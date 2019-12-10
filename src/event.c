@@ -267,6 +267,21 @@ static int event_screen_options(struct game_context *ctx)
 	return 0;
 }
 
+static int event_screen_credits(struct game_context *ctx)
+{
+	switch (ctx->action) {
+	case ACTION_ENTER:
+	case ACTION_ESCAPE:
+	case ACTION_PAUSE:
+		ctx->title_status = TITLE_STATE_MENU;
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+
 static int event_quit(struct game_context *ctx)
 {
 	switch (ctx->action) {
@@ -544,7 +559,7 @@ int main_event(struct game_context *ctx)
 				event_screen_options(ctx);
 				break;
 			case TITLE_STATE_CREDIT:
-				//event_screen_credits(ctx);
+				event_screen_credits(ctx);
 				break;
 			default:
 				break;
