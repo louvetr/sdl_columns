@@ -209,6 +209,78 @@ static int main_sleep(struct game_context *ctx)
 	return 0;
 }
 
+static int main_destroy(struct game_context *ctx)
+{
+	int i, j;
+
+	// free textures
+	SDL_DestroyTexture(ctx->gfx.t_bg_title.texture);
+	SDL_DestroyTexture(ctx->gfx.t_bg_game.texture);
+	SDL_DestroyTexture(ctx->gfx.t_gems_sheet.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_title.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_title_startgame.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_title_options.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_title_credits.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_title_exit.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_gameover.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_gameover_score.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_game_next_label.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_game_score_label.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_game_score_value.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_game_level_label.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_game_level_value.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_game_nbgem_label.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_game_nbgem_value.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_options_music.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_options_sfx.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_options_resume.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_credits_music_label.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_credits_music_1.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_credits_music_2.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_credits_sfx_label.texture);
+	SDL_DestroyTexture(ctx->gfx.t_font_credits_sfx_1.texture);
+
+	// free music
+	Mix_FreeMusic(ctx->sfx.music_title);
+	Mix_FreeMusic(ctx->sfx.music_game);
+
+	//Free the sound effects
+	Mix_FreeChunk(ctx->sfx.sfx_gameover);
+	Mix_FreeChunk(ctx->sfx.sfx_gem_cleared);
+	Mix_FreeChunk(ctx->sfx.sfx_gem_grounded);
+	Mix_FreeChunk(ctx->sfx.sfx_gem_swapped);
+	Mix_FreeChunk(ctx->sfx.sfx_menu_move);
+	Mix_FreeChunk(ctx->sfx.sfx_menu_select);
+
+	//Destroy window
+	SDL_DestroyRenderer(ctx->gfx.renderer);
+	SDL_DestroyWindow(ctx->gfx.window);
+
+	for (i = 0; i < PG_NB_COLUMNS; i++) {
+		for (j = 0; j < PG_NB_ROWS; j++) {
+			free(ctx->gem_array[i][j]);
+			ctx->gem_array[i][j] = NULL;
+		}
+	}
+
+	for (i = 0; i < 3; i++) {
+		free(ctx->gem_trio[i]);
+		ctx->gem_trio[i] = NULL;
+		free(ctx->gem_trio_next[i]);
+		ctx->gem_trio_next[i] = NULL;
+	}
+
+	//Quit SDL subsystems
+	Mix_Quit();
+	TTF_Quit();
+	IMG_Quit();
+	SDL_Quit();
+
+	free(ctx);
+
+	return 0;
+}
+
 /////////////////////////////////////////////////////////////////
 // Main function
 ////////////////////////////////////////////////////////////////
@@ -227,9 +299,6 @@ int main()
 
 	// game loop
 	while (!ctx->exit) {
-		// change state
-		//main_state(ctx);
-
 		// events management
 		main_event(ctx);
 
@@ -246,9 +315,7 @@ int main()
 	}
 
 	// free resources
-	//main_destroy(ctx);
-
-	free(ctx);
+	main_destroy(ctx);
 
 	return 0;
 }
