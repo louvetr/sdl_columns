@@ -59,6 +59,7 @@ enum game_status {
     GAME_STATE_CREDIT,
     GAME_STATE_GAME,
     GAME_STATE_CLEAR_GEMS,
+    GAME_STATE_GRAVITY_GEMS,
     GAME_STATE_PAUSE,
     GAME_STATE_GAMEOVER,
     GAME_STATE_QUIT
@@ -127,6 +128,8 @@ struct gem {
     enum gem_status status;
     // what kind it is
     enum gem_type type;
+    // distance to fall when a gem below get cleared
+    unsigned int fall_length;
 };
 
 struct texture {
@@ -265,5 +268,7 @@ int gem_move_trio(struct game_context *ctx);
 int gem_toggle_trio(struct gem *trio[3]);
 int gem_check_combo(struct game_context *ctx);
 int gem_apply_gravity(struct gem *array[PG_NB_COLUMNS][PG_NB_ROWS]);
+int gem_set_falling(struct gem *array[PG_NB_COLUMNS][PG_NB_ROWS]);
+int gem_apply_gravity_fall(struct gem *array[PG_NB_COLUMNS][PG_NB_ROWS]);
 
 int game_text_labels_to_texture(struct game_context *ctx);

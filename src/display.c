@@ -796,6 +796,7 @@ int main_display(struct game_context *ctx)
 	case GAME_STATE_QUIT:
 		break;
 	case GAME_STATE_GAME:
+	case GAME_STATE_GRAVITY_GEMS:
 		display_screen_game(ctx, DISPLAY_ALL_GEMS);
 		break;
 	case GAME_STATE_PAUSE:

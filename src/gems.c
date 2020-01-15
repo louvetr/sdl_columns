@@ -282,3 +282,70 @@ int gem_apply_gravity(struct gem *array[PG_NB_COLUMNS][PG_NB_ROWS])
 
 	return 0;
 }
+
+int gem_set_falling(struct gem *array[PG_NB_COLUMNS][PG_NB_ROWS])
+{
+	// go through each gem in array
+	for (int i = PG_NB_COLUMNS - 1; i >= 0; i--) {
+		int nb_gap = 0;
+		for (int j = PG_NB_ROWS - 1; j >= 0; j--) {
+			if (array[i][j] == NULL) {
+				break;
+			}
+			if (array[i][j]->status == GEM_STATE_CLEARING) {
+				free(array[i][j]);
+				array[i][j] = NULL;
+				nb_gap++;
+			} else if (nb_gap > 0) {
+				array[i][j + nb_gap] = array[i][j];
+				array[i][j + nb_gap]->fall_length =
+					GEM_HEIGHT * nb_gap;
+				array[i][j] = NULL;
+			}
+		}
+	}
+
+	return 0;
+}
+
+int gem_apply_gravity_fall(struct gem *array[PG_NB_COLUMNS][PG_NB_ROWS])
+{
+	int ret;
+	struct gem *last_grounded;
+
+	for (int i = PG_NB_COLUMNS - 1; i >= 0; i--) {
+		last_grounded = NULL;
+		for (int j = PG_NB_ROWS - 1; j >= 0; j--) {
+			if (array[i][j] && array[i][j]->fall_length > 0) {
+				array[i][j]->y += MAX_SPEED;
+				array[i][j]->fall_length -= MAX_SPEED;
+				ret = gem_check_collision_vertical(
+					array[i][j], last_grounded);
+				if (!ret) {
+					SDL_Log("[%s] array[%d][%d].y = %d\n",
+						__func__, i, j, array[i][j]->y);
+				} else {
+					array[i][j]->y -= MAX_SPEED;
+					if (j == PG_NB_ROWS - 1) {
+						array[i][j]->y +=
+							array[i][j]
+								->fall_length +
+							PG_Y;
+						SDL_Log("[%s] array[%d][%d].y = %d\n",
+							__func__, i, j,
+							array[i][j]->y);
+					} else {
+						array[i][j]->y +=
+							array[i][j]->fall_length;
+						SDL_Log("[%s] array[%d][%d].y = %d\n",
+							__func__, i, j,
+							array[i][j]->y);
+					}
+					array[i][j]->fall_length = 0;
+				}
+			}
+		}
+	}
+
+	return 0;
+}

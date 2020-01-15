@@ -76,33 +76,71 @@ static int logic_game(struct game_context *ctx)
 
 static int logic_gem_clearing(struct game_context *ctx)
 {
-	int nb_gem_cleared;
+	SDL_Log("[%s] enter with prev state = %d\n", __func__,
+		ctx->status_prev);
 
-	if (ctx->status_prev == GAME_STATE_GAME)
-		goto exit;
-
-	gem_apply_gravity(ctx->gem_array);
-	nb_gem_cleared = gem_check_combo(ctx);
-	if (nb_gem_cleared > 0) {
-		if (!ctx->mute_sfx)
-			Mix_PlayChannel(SFX_CHANNEL, ctx->sfx.sfx_gem_cleared,
-					0);
-		ctx->score_multiplier++;
-		ctx->score += nb_gem_cleared * ctx->score_multiplier;
-		printf("[%s] score goes to %d\n", __func__, ctx->score);
-		ctx->nb_gems_cleared += nb_gem_cleared;
-		ctx->level = ctx->nb_gems_cleared / GEMS_PER_LEVEL + 1;
-		if (ctx->level > MAX_SPEED)
-			ctx->level = MAX_SPEED;
-		printf("[%s] game state stay ins to GAME_STATE_CLEAR_GEMS\n",
-		       __func__);
-	} else {
-		ctx->score_multiplier = 1;
+	gem_set_falling(ctx->gem_array);
+	int nb_falling = 0;
+	for (int i = PG_NB_COLUMNS - 1; i >= 0; i--) {
+		for (int j = PG_NB_ROWS - 1; j >= 0; j--) {
+			if (ctx->gem_array[i][j] &&
+			    ctx->gem_array[i][j]->fall_length > 0) {
+				nb_falling++;
+			}
+		}
+	}
+	if (nb_falling == 0) {
+		ctx->status_prev = ctx->status_cur;
 		ctx->status_cur = GAME_STATE_GAME;
+	} else {
+		ctx->status_prev = ctx->status_cur;
+		ctx->status_cur = GAME_STATE_GRAVITY_GEMS;
 	}
 
-exit:
-	ctx->status_prev = ctx->status_cur;
+	return 0;
+}
+
+static int logic_gem_gravity(struct game_context *ctx)
+{
+	SDL_Log("[%s] enter with prev state = %d\n", __func__,
+		ctx->status_prev);
+
+	gem_apply_gravity_fall(ctx->gem_array);
+
+	int nb_falling = 0;
+	for (int i = PG_NB_COLUMNS - 1; i >= 0; i--) {
+		for (int j = PG_NB_ROWS - 1; j >= 0; j--) {
+			if (ctx->gem_array[i][j] &&
+			    ctx->gem_array[i][j]->fall_length > 0) {
+				nb_falling++;
+			}
+		}
+	}
+	if (nb_falling == 0) {
+		int nb_gem_cleared = gem_check_combo(ctx);
+		if (nb_gem_cleared > 0) {
+			if (!ctx->mute_sfx)
+				Mix_PlayChannel(SFX_CHANNEL,
+						ctx->sfx.sfx_gem_cleared, 0);
+			ctx->score_multiplier++;
+			ctx->score += nb_gem_cleared * ctx->score_multiplier;
+			printf("[%s] score goes to %d\n", __func__, ctx->score);
+			ctx->nb_gems_cleared += nb_gem_cleared;
+			ctx->level = ctx->nb_gems_cleared / GEMS_PER_LEVEL + 1;
+			if (ctx->level > MAX_SPEED)
+				ctx->level = MAX_SPEED;
+
+			ctx->status_prev = ctx->status_cur;
+			ctx->status_cur = GAME_STATE_CLEAR_GEMS;
+		} else {
+			ctx->status_prev = ctx->status_cur;
+			ctx->status_cur = GAME_STATE_GAME;
+		}
+	} else {
+		ctx->status_prev = ctx->status_cur;
+		ctx->status_cur = GAME_STATE_GRAVITY_GEMS;
+	}
+
 	return 0;
 }
 
@@ -126,6 +164,9 @@ int main_logic(struct game_context *ctx)
 		break;
 	case GAME_STATE_CLEAR_GEMS:
 		logic_gem_clearing(ctx);
+		break;
+	case GAME_STATE_GRAVITY_GEMS:
+		logic_gem_gravity(ctx);
 		break;
 	case GAME_STATE_QUIT:
 	case GAME_STATE_PAUSE:
